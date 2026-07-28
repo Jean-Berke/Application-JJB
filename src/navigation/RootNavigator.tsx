@@ -9,6 +9,9 @@ import { ThreadScreen } from '../screens/ThreadScreen';
 import { ComposeScreen } from '../screens/ComposeScreen';
 import { UserProfileScreen } from '../screens/UserProfileScreen';
 import { VerifyScreen } from '../screens/VerifyScreen';
+import { OpenMatsScreen } from '../screens/OpenMatsScreen';
+import { OpenMatDetailScreen } from '../screens/OpenMatDetailScreen';
+import { OpenMatAddScreen } from '../screens/OpenMatAddScreen';
 import { MainTabs } from './MainTabs';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -26,6 +29,9 @@ export function RootNavigator() {
       <Stack.Screen name="Thread" component={ThreadScreen} />
       <Stack.Screen name="UserProfile" component={UserProfileScreen} />
       <Stack.Screen name="Verify" component={VerifyScreen} />
+      <Stack.Screen name="OpenMats" component={OpenMatsScreen} />
+      <Stack.Screen name="OpenMatDetail" component={OpenMatDetailScreen} />
+      <Stack.Screen name="OpenMatAdd" component={OpenMatAddScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen name="Compose" component={ComposeScreen} options={{ presentation: 'modal' }} />
     </Stack.Navigator>
   );

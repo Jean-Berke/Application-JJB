@@ -10,6 +10,7 @@ import { HomeFeedScreen } from '../screens/HomeFeedScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { StudentsScreen } from '../screens/StudentsScreen';
 import { ClubHomeScreen } from '../screens/ClubHomeScreen';
+import { OpenMatsScreen } from '../screens/OpenMatsScreen';
 import { PlaceholderScreen } from '../screens/PlaceholderScreen';
 import { useApp } from '../data/store';
 
@@ -31,10 +32,6 @@ function TechniquesPlaceholder() {
 
 function ProgressionPlaceholder() {
   return <PlaceholderScreen title="Progression" />;
-}
-
-function OpenMatsPlaceholder() {
-  return <PlaceholderScreen title="Open mats" />;
 }
 
 function EmptyScreen() {
@@ -153,7 +150,7 @@ function ClubTabs() {
       />
       <ClubTab.Screen
         name="OpenMats"
-        component={OpenMatsPlaceholder}
+        component={OpenMatsScreen}
         options={{ tabBarIcon: ({ color, size }) => <MapPin color={color} size={size} strokeWidth={1.6} /> }}
       />
       <ClubTab.Screen

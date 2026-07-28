@@ -41,6 +41,42 @@ export type Academy = {
   verified: boolean;
 };
 
+export type OpenMatLevel = 'all' | 'blue_plus' | 'competitors';
+export type OpenMatFormat = 'gi' | 'nogi' | 'both';
+export type DayFilter = 'today' | 'week';
+
+export type OpenMat = {
+  id: string;
+  academyId: string | null;
+  createdBy: string;
+  gymName: string;
+  neighborhood: string;
+  lat: number;
+  lng: number;
+  dayLabel: string;
+  dayKey: DayFilter;
+  startTime: string;
+  endTime: string;
+  level: OpenMatLevel;
+  format: OpenMatFormat;
+  isFree: boolean;
+  distanceKm: number;
+  description: string;
+  attendeeIds: string[];
+};
+
+export const openMatLevelLabels: Record<OpenMatLevel, string> = {
+  all: 'Tous niveaux',
+  blue_plus: 'Ceinture bleue +',
+  competitors: 'Compétiteurs',
+};
+
+export const openMatFormatLabels: Record<OpenMatFormat, string> = {
+  gi: 'Gi',
+  nogi: 'No-gi',
+  both: 'Gi & No-gi',
+};
+
 export type MediaType = 'video' | 'photo';
 
 export type Post = {

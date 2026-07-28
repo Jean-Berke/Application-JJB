@@ -5,17 +5,31 @@ import {
   replies as initialReplies,
   profiles as initialProfiles,
   beltPromotions as initialPromotions,
+  openMats as initialOpenMats,
 } from './mock';
-import { BeltPromotion, Post, Profile } from './types';
+import { BeltPromotion, OpenMat, OpenMatFormat, OpenMatLevel, Post, Profile } from './types';
 
 export type ViewMode = 'practitioner' | 'club';
+
+export type NewOpenMat = {
+  gymName: string;
+  neighborhood: string;
+  dayLabel: string;
+  startTime: string;
+  endTime: string;
+  level: OpenMatLevel;
+  format: OpenMatFormat;
+  isFree: boolean;
+};
 
 type AppState = {
   posts: Post[];
   replies: Post[];
   profiles: Profile[];
   promotions: BeltPromotion[];
+  openMats: OpenMat[];
   followedIds: Set<string>;
+  reminderIds: Set<string>;
   viewMode: ViewMode;
   toggleLike: (postId: string) => void;
   toggleFollow: (profileId: string) => void;
@@ -27,6 +41,9 @@ type AppState = {
   approvePromotion: (promotionId: string) => void;
   declinePromotion: (promotionId: string) => void;
   setViewMode: (mode: ViewMode) => void;
+  toggleAttendance: (openMatId: string) => void;
+  toggleReminder: (openMatId: string) => void;
+  addOpenMat: (data: NewOpenMat) => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -44,7 +61,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [replies, setReplies] = useState<Post[]>(initialReplies);
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [promotions, setPromotions] = useState<BeltPromotion[]>(initialPromotions);
+  const [openMats, setOpenMats] = useState<OpenMat[]>(initialOpenMats);
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set(['u-marcio']));
+  const [reminderIds, setReminderIds] = useState<Set<string>>(new Set(['om-1']));
   const [viewMode, setViewMode] = useState<ViewMode>('practitioner');
 
   const value = useMemo<AppState>(
@@ -53,7 +72,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       replies,
       profiles,
       promotions,
+      openMats,
       followedIds,
+      reminderIds,
       viewMode,
       toggleLike: (postId: string) => {
         setPosts((list) => toggleLikeIn(list, postId));
@@ -137,8 +158,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         );
       },
       setViewMode,
+      toggleAttendance: (openMatId: string) => {
+        setOpenMats((list) =>
+          list.map((om) =>
+            om.id === openMatId
+              ? {
+                  ...om,
+                  attendeeIds: om.attendeeIds.includes(currentUserId)
+                    ? om.attendeeIds.filter((id) => id !== currentUserId)
+                    : [...om.attendeeIds, currentUserId],
+                }
+              : om
+          )
+        );
+      },
+      toggleReminder: (openMatId: string) => {
+        setReminderIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(openMatId)) next.delete(openMatId);
+          else next.add(openMatId);
+          return next;
+        });
+      },
+      addOpenMat: (data: NewOpenMat) => {
+        const newOpenMat: OpenMat = {
+          id: `om-${Date.now()}`,
+          academyId: null,
+          createdBy: currentUserId,
+          gymName: data.gymName,
+          neighborhood: data.neighborhood,
+          lat: 45.75,
+          lng: 4.85,
+          dayLabel: data.dayLabel,
+          dayKey: 'week',
+          startTime: data.startTime,
+          endTime: data.endTime,
+          level: data.level,
+          format: data.format,
+          isFree: data.isFree,
+          distanceKm: 0,
+          description: '',
+          attendeeIds: [currentUserId],
+        };
+        setOpenMats((list) => [newOpenMat, ...list]);
+      },
     }),
-    [posts, replies, profiles, promotions, followedIds, viewMode]
+    [posts, replies, profiles, promotions, openMats, followedIds, reminderIds, viewMode]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

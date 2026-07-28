@@ -31,7 +31,9 @@ export function HomeFeedScreen({ navigation }: Props) {
         </View>
         <View style={styles.headerIcons}>
           <Pressable hitSlop={8}><Search color={colors.text} size={21} strokeWidth={1.6} /></Pressable>
-          <Pressable hitSlop={8}><MapPin color={colors.text} size={21} strokeWidth={1.6} /></Pressable>
+          <Pressable hitSlop={8} onPress={() => navigation.navigate('OpenMats')}>
+            <MapPin color={colors.text} size={21} strokeWidth={1.6} />
+          </Pressable>
           <Pressable hitSlop={8} style={styles.iconWithDot}>
             <MessageCircle color={colors.text} size={21} strokeWidth={1.6} />
             <View style={styles.dot} />

@@ -7,6 +7,9 @@ export type RootStackParamList = {
   Compose: undefined;
   UserProfile: { profileId: string };
   Verify: undefined;
+  OpenMats: undefined;
+  OpenMatDetail: { openMatId: string };
+  OpenMatAdd: undefined;
 };
 
 export type MainTabParamList = {

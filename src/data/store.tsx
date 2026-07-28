@@ -10,9 +10,11 @@ import {
   notifications as initialNotifications,
   conversations as initialConversations,
   messages as initialMessages,
+  attendanceToday as initialAttendance,
 } from './mock';
 import {
   AppNotification,
+  Attendance,
   BeltPromotion,
   ChatMessage,
   Conversation,
@@ -50,6 +52,7 @@ type AppState = {
   notifications: AppNotification[];
   conversations: Conversation[];
   messages: ChatMessage[];
+  attendance: Attendance[];
   followedIds: Set<string>;
   reminderIds: Set<string>;
   openedConversationIds: Set<string>;
@@ -73,6 +76,7 @@ type AppState = {
   messagesFor: (conversationId: string) => ChatMessage[];
   sendMessage: (conversationId: string, body: string) => void;
   markConversationOpened: (conversationId: string) => void;
+  toggleClassAttendance: (classId: string, profileId: string) => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -95,6 +99,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
   const [conversations] = useState<Conversation[]>(initialConversations);
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [attendance, setAttendance] = useState<Attendance[]>(initialAttendance);
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set(['u-marcio']));
   const [reminderIds, setReminderIds] = useState<Set<string>>(new Set(['om-1']));
   const [openedConversationIds, setOpenedConversationIds] = useState<Set<string>>(new Set());
@@ -111,6 +116,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       notifications,
       conversations,
       messages,
+      attendance,
       followedIds,
       reminderIds,
       openedConversationIds,
@@ -287,6 +293,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       markConversationOpened: (conversationId: string) => {
         setOpenedConversationIds((prev) => new Set(prev).add(conversationId));
       },
+      toggleClassAttendance: (classId: string, profileId: string) => {
+        setAttendance((list) => {
+          const existing = list.find((a) => a.classId === classId && a.profileId === profileId);
+          if (existing) {
+            return list.map((a) => (a === existing ? { ...a, present: !a.present } : a));
+          }
+          return [
+            ...list,
+            { id: `att-${Date.now()}`, classId, profileId, dateLabel: "Aujourd'hui", present: true },
+          ];
+        });
+      },
     }),
     [
       posts,
@@ -298,6 +316,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       notifications,
       conversations,
       messages,
+      attendance,
       followedIds,
       reminderIds,
       openedConversationIds,

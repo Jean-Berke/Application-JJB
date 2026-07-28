@@ -1,6 +1,13 @@
 import { BeltLevel } from '../theme/tokens';
 
 export type AcademyRole = 'student' | 'assistant' | 'head_coach';
+export type PaymentStatus = 'current' | 'late' | 'trial';
+
+export const paymentStatusLabels: Record<PaymentStatus, string> = {
+  current: 'À jour',
+  late: 'Retard',
+  trial: 'Essai',
+};
 
 export type Profile = {
   id: string;
@@ -16,6 +23,9 @@ export type Profile = {
   followerCount: number;
   followingCount: number;
   sessionCount: number;
+  plan: string | null;
+  paymentStatus: PaymentStatus | null;
+  nextDueLabel: string | null;
 };
 
 export type PromotionStatus = 'pending' | 'approved' | 'declined';
@@ -146,6 +156,24 @@ export type ChatMessage = {
   senderId: string;
   body: string;
   createdAtLabel: string;
+};
+
+export type AcademyClass = {
+  id: string;
+  academyId: string;
+  name: string;
+  level: string;
+  weekday: number;
+  startTime: string;
+  endTime: string;
+};
+
+export type Attendance = {
+  id: string;
+  classId: string;
+  profileId: string;
+  dateLabel: string;
+  present: boolean;
 };
 
 export type MediaType = 'video' | 'photo';

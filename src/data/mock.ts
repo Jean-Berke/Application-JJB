@@ -1,6 +1,8 @@
 import {
   Academy,
+  AcademyClass,
   AppNotification,
+  Attendance,
   BeltPromotion,
   ChatMessage,
   Conversation,
@@ -49,6 +51,9 @@ export const profiles: Profile[] = [
     followerCount: 42,
     followingCount: 63,
     sessionCount: 58,
+    plan: null,
+    paymentStatus: null,
+    nextDueLabel: null,
   },
   {
     id: 'u-marcio',
@@ -64,6 +69,9 @@ export const profiles: Profile[] = [
     followerCount: 1840,
     followingCount: 112,
     sessionCount: 940,
+    plan: null,
+    paymentStatus: null,
+    nextDueLabel: null,
   },
   {
     id: 'u-karim',
@@ -79,6 +87,9 @@ export const profiles: Profile[] = [
     followerCount: 210,
     followingCount: 180,
     sessionCount: 214,
+    plan: 'Illimité',
+    paymentStatus: 'current',
+    nextDueLabel: '5 août 2026',
   },
   {
     id: 'u-lea',
@@ -94,6 +105,9 @@ export const profiles: Profile[] = [
     followerCount: 18,
     followingCount: 54,
     sessionCount: 22,
+    plan: 'Découverte',
+    paymentStatus: 'trial',
+    nextDueLabel: null,
   },
   {
     id: 'u-thomas',
@@ -109,6 +123,9 @@ export const profiles: Profile[] = [
     followerCount: 9,
     followingCount: 21,
     sessionCount: 47,
+    plan: 'Découverte',
+    paymentStatus: 'trial',
+    nextDueLabel: '2 août 2026',
   },
   {
     id: 'u-sophie',
@@ -124,6 +141,9 @@ export const profiles: Profile[] = [
     followerCount: 33,
     followingCount: 40,
     sessionCount: 132,
+    plan: '2 / semaine',
+    paymentStatus: 'late',
+    nextDueLabel: '20 juillet 2026',
   },
 ];
 
@@ -556,6 +576,24 @@ export const messages: ChatMessage[] = [
     body: "Tu viens à l'open mat de ce soir ?",
     createdAtLabel: 'Hier',
   },
+];
+
+export const academyClasses: AcademyClass[] = [
+  {
+    id: 'class-1',
+    academyId: 'a-gb-lyon',
+    name: 'Cours du soir',
+    level: 'Tous niveaux',
+    weekday: new Date().getDay() === 0 ? 6 : new Date().getDay() - 1,
+    startTime: '19:00',
+    endTime: '20:30',
+  },
+];
+
+export const attendanceToday: Attendance[] = [
+  { id: 'att-1', classId: 'class-1', profileId: 'u-karim', dateLabel: "Aujourd'hui", present: true },
+  { id: 'att-2', classId: 'class-1', profileId: 'u-thomas', dateLabel: "Aujourd'hui", present: true },
+  { id: 'att-3', classId: 'class-1', profileId: 'u-sophie', dateLabel: "Aujourd'hui", present: false },
 ];
 
 export function getProfile(id: string): Profile {

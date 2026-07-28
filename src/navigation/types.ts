@@ -35,4 +35,5 @@ export type RootStackParamList = {
   Messages: undefined;
   Chat: { conversationId: string };
   Settings: undefined;
+  Admin: undefined;
 };

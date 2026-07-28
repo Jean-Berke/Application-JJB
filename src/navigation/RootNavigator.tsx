@@ -19,6 +19,7 @@ import { NotificationsScreen } from '../screens/NotificationsScreen';
 import { MessagesScreen } from '../screens/MessagesScreen';
 import { ChatScreen } from '../screens/ChatScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { AdminScreen } from '../screens/AdminScreen';
 import { MainTabs } from './MainTabs';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -46,6 +47,7 @@ export function RootNavigator() {
       <Stack.Screen name="Messages" component={MessagesScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
       <Stack.Screen name="Settings" component={SettingsScreen} />
+      <Stack.Screen name="Admin" component={AdminScreen} />
       <Stack.Screen name="Compose" component={ComposeScreen} options={{ presentation: 'modal' }} />
     </Stack.Navigator>
   );

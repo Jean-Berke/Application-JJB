@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, Pressable } from 'react-native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/types';
 import { colors, radii, spacing, beltLabels } from '../theme/tokens';
 import { fonts } from '../theme/fonts';
 import { Card } from '../components/ui/Card';
@@ -11,7 +13,9 @@ import { Meta } from '../components/ui/Typography';
 import { useApp } from '../data/store';
 import { currentUserId } from '../data/mock';
 
-export function StudentsScreen() {
+type Props = NativeStackScreenProps<RootStackParamList>;
+
+export function StudentsScreen({ navigation }: Props) {
   const { getProfile, academyMembers, promotions, approvePromotion, declinePromotion } = useApp();
   const [search, setSearch] = useState('');
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
@@ -37,7 +41,7 @@ export function StudentsScreen() {
     <SafeAreaView style={styles.root}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Élèves</Text>
-        <Pressable style={styles.adminButton}>
+        <Pressable style={styles.adminButton} onPress={() => navigation.navigate('Admin')}>
           <Text style={styles.adminButtonLabel}>Admin</Text>
         </Pressable>
       </View>

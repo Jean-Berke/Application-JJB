@@ -45,7 +45,7 @@ export function ProfileScreen({ navigation }: Props) {
                 onPress={() => setViewMode('club')}
               />
             )}
-            <Pressable style={styles.iconButton}>
+            <Pressable style={styles.iconButton} onPress={() => navigation.navigate('Settings')}>
               <Settings color={colors.text} size={18} />
             </Pressable>
           </View>

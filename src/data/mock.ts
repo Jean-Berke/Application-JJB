@@ -1,4 +1,15 @@
-import { Academy, BeltPromotion, NotebookEntry, OpenMat, Post, Profile, Technique } from './types';
+import {
+  Academy,
+  AppNotification,
+  BeltPromotion,
+  ChatMessage,
+  Conversation,
+  NotebookEntry,
+  OpenMat,
+  Post,
+  Profile,
+  Technique,
+} from './types';
 
 export const currentUserId = 'u-me';
 
@@ -467,6 +478,83 @@ export const notebookEntries: NotebookEntry[] = [
     note: 'Toujours en retard sur le cadre, je le pose trop tard.',
     drillCount: 5,
     lastDrilledLabel: null,
+  },
+];
+
+export const notifications: AppNotification[] = [
+  {
+    id: 'notif-1',
+    profileId: currentUserId,
+    actorId: 'u-karim',
+    kind: 'reply',
+    message: 'a répondu à ton post',
+    createdAtLabel: '12 min',
+    read: false,
+  },
+  {
+    id: 'notif-2',
+    profileId: currentUserId,
+    actorId: 'u-marcio',
+    kind: 'grade',
+    message: 'a validé ton grade',
+    createdAtLabel: '3 h',
+    read: false,
+  },
+  {
+    id: 'notif-3',
+    profileId: currentUserId,
+    actorId: 'u-lea',
+    kind: 'follow',
+    message: 'a commencé à te suivre',
+    createdAtLabel: '5 h',
+    read: true,
+  },
+  {
+    id: 'notif-4',
+    profileId: currentUserId,
+    actorId: 'u-thomas',
+    kind: 'like',
+    message: 'a aimé ton post',
+    createdAtLabel: '1 j',
+    read: true,
+  },
+  {
+    id: 'notif-5',
+    profileId: currentUserId,
+    actorId: 'u-karim',
+    kind: 'openmat',
+    message: 'a ajouté un open mat près de toi',
+    createdAtLabel: '2 j',
+    read: true,
+  },
+];
+
+export const conversations: Conversation[] = [
+  { id: 'conv-1', participantIds: [currentUserId, 'u-marcio'] },
+  { id: 'conv-2', participantIds: [currentUserId, 'u-karim'] },
+];
+
+export const messages: ChatMessage[] = [
+  {
+    id: 'msg-1',
+    conversationId: 'conv-1',
+    senderId: 'u-marcio',
+    body: 'Bien joué pour ta ceinture bleue, continue comme ça.',
+    createdAtLabel: '09:12',
+  },
+  {
+    id: 'msg-2',
+    conversationId: 'conv-1',
+    senderId: currentUserId,
+    body: 'Merci coach ! Je bosse le triangle cette semaine.',
+    createdAtLabel: '09:14',
+  },
+  {
+    id: 'msg-3',
+    conversationId: 'conv-2',
+    senderId: 'u-karim',
+    body: "Tu viens à l'open mat de ce soir ?",
+    createdAtLabel: 'Hier',
   },
 ];
 

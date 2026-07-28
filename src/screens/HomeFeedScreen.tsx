@@ -17,10 +17,17 @@ type Tab = 'pourToi' | 'suivis';
 
 export function HomeFeedScreen({ navigation }: Props) {
   const [tab, setTab] = useState<Tab>('pourToi');
-  const { posts, followedIds, getProfile } = useApp();
+  const { posts, followedIds, getProfile, notifications, conversations, messages, openedConversationIds } = useApp();
   const me = getProfile(currentUserId);
 
   const visiblePosts = tab === 'pourToi' ? posts : posts.filter((p) => followedIds.has(p.authorId));
+
+  const hasUnreadNotifications = notifications.some((n) => n.profileId === currentUserId && !n.read);
+  const hasUnreadMessages = conversations.some((c) => {
+    if (openedConversationIds.has(c.id)) return false;
+    const last = messages.filter((m) => m.conversationId === c.id).slice(-1)[0];
+    return last && last.senderId !== currentUserId;
+  });
 
   return (
     <SafeAreaView style={styles.root}>
@@ -30,17 +37,19 @@ export function HomeFeedScreen({ navigation }: Props) {
           <Text style={styles.brandLabel}>OSS</Text>
         </View>
         <View style={styles.headerIcons}>
-          <Pressable hitSlop={8}><Search color={colors.text} size={21} strokeWidth={1.6} /></Pressable>
+          <Pressable hitSlop={8} onPress={() => navigation.navigate('Search')}>
+            <Search color={colors.text} size={21} strokeWidth={1.6} />
+          </Pressable>
           <Pressable hitSlop={8} onPress={() => navigation.navigate('OpenMats')}>
             <MapPin color={colors.text} size={21} strokeWidth={1.6} />
           </Pressable>
-          <Pressable hitSlop={8} style={styles.iconWithDot}>
+          <Pressable hitSlop={8} style={styles.iconWithDot} onPress={() => navigation.navigate('Messages')}>
             <MessageCircle color={colors.text} size={21} strokeWidth={1.6} />
-            <View style={styles.dot} />
+            {hasUnreadMessages && <View style={styles.dot} />}
           </Pressable>
-          <Pressable hitSlop={8} style={styles.iconWithDot}>
+          <Pressable hitSlop={8} style={styles.iconWithDot} onPress={() => navigation.navigate('Notifications')}>
             <Bell color={colors.text} size={21} strokeWidth={1.6} />
-            <View style={styles.dot} />
+            {hasUnreadNotifications && <View style={styles.dot} />}
           </Pressable>
           <Pressable onPress={() => navigation.navigate('UserProfile', { profileId: currentUserId })}>
             <Avatar name={me.displayName} size={28} />

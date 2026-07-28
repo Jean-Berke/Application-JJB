@@ -123,6 +123,31 @@ export type NotebookEntry = {
   lastDrilledLabel: string | null;
 };
 
+export type NotificationKind = 'reply' | 'like' | 'follow' | 'grade' | 'openmat';
+
+export type AppNotification = {
+  id: string;
+  profileId: string;
+  actorId: string;
+  kind: NotificationKind;
+  message: string;
+  createdAtLabel: string;
+  read: boolean;
+};
+
+export type Conversation = {
+  id: string;
+  participantIds: string[];
+};
+
+export type ChatMessage = {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  body: string;
+  createdAtLabel: string;
+};
+
 export type MediaType = 'video' | 'photo';
 
 export type Post = {

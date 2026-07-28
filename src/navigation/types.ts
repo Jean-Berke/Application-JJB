@@ -30,4 +30,9 @@ export type RootStackParamList = {
   OpenMatAdd: undefined;
   TechniqueDetail: { techniqueId: string };
   Notebook: undefined;
+  Search: undefined;
+  Notifications: undefined;
+  Messages: undefined;
+  Chat: { conversationId: string };
+  Settings: undefined;
 };

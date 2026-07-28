@@ -7,9 +7,15 @@ import {
   beltPromotions as initialPromotions,
   openMats as initialOpenMats,
   notebookEntries as initialNotebookEntries,
+  notifications as initialNotifications,
+  conversations as initialConversations,
+  messages as initialMessages,
 } from './mock';
 import {
+  AppNotification,
   BeltPromotion,
+  ChatMessage,
+  Conversation,
   NotebookEntry,
   NotebookStatus,
   notebookStatusOrder,
@@ -41,8 +47,12 @@ type AppState = {
   promotions: BeltPromotion[];
   openMats: OpenMat[];
   notebookEntries: NotebookEntry[];
+  notifications: AppNotification[];
+  conversations: Conversation[];
+  messages: ChatMessage[];
   followedIds: Set<string>;
   reminderIds: Set<string>;
+  openedConversationIds: Set<string>;
   viewMode: ViewMode;
   toggleLike: (postId: string) => void;
   toggleFollow: (profileId: string) => void;
@@ -59,6 +69,10 @@ type AppState = {
   addOpenMat: (data: NewOpenMat) => void;
   addToNotebook: (technique: Technique) => void;
   cycleNotebookStatus: (entryId: string) => void;
+  markAllNotificationsRead: () => void;
+  messagesFor: (conversationId: string) => ChatMessage[];
+  sendMessage: (conversationId: string, body: string) => void;
+  markConversationOpened: (conversationId: string) => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -78,8 +92,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [promotions, setPromotions] = useState<BeltPromotion[]>(initialPromotions);
   const [openMats, setOpenMats] = useState<OpenMat[]>(initialOpenMats);
   const [notebookEntries, setNotebookEntries] = useState<NotebookEntry[]>(initialNotebookEntries);
+  const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
+  const [conversations] = useState<Conversation[]>(initialConversations);
+  const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set(['u-marcio']));
   const [reminderIds, setReminderIds] = useState<Set<string>>(new Set(['om-1']));
+  const [openedConversationIds, setOpenedConversationIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>('practitioner');
 
   const value = useMemo<AppState>(
@@ -90,8 +108,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       promotions,
       openMats,
       notebookEntries,
+      notifications,
+      conversations,
+      messages,
       followedIds,
       reminderIds,
+      openedConversationIds,
       viewMode,
       toggleLike: (postId: string) => {
         setPosts((list) => toggleLikeIn(list, postId));
@@ -248,8 +270,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           })
         );
       },
+      markAllNotificationsRead: () => {
+        setNotifications((list) => list.map((n) => ({ ...n, read: true })));
+      },
+      messagesFor: (conversationId: string) => messages.filter((m) => m.conversationId === conversationId),
+      sendMessage: (conversationId: string, body: string) => {
+        const newMessage: ChatMessage = {
+          id: `msg-${Date.now()}`,
+          conversationId,
+          senderId: currentUserId,
+          body,
+          createdAtLabel: 'à l’instant',
+        };
+        setMessages((list) => [...list, newMessage]);
+      },
+      markConversationOpened: (conversationId: string) => {
+        setOpenedConversationIds((prev) => new Set(prev).add(conversationId));
+      },
     }),
-    [posts, replies, profiles, promotions, openMats, notebookEntries, followedIds, reminderIds, viewMode]
+    [
+      posts,
+      replies,
+      profiles,
+      promotions,
+      openMats,
+      notebookEntries,
+      notifications,
+      conversations,
+      messages,
+      followedIds,
+      reminderIds,
+      openedConversationIds,
+      viewMode,
+    ]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

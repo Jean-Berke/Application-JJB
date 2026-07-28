@@ -11,6 +11,7 @@ import { Kicker, Meta } from '../components/ui/Typography';
 import { techniques } from '../data/mock';
 import { useApp } from '../data/store';
 import { Technique, TechniqueCategory, techniqueCategoryLabels } from '../data/types';
+import { normalizeSearch } from '../utils/text';
 
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -28,16 +29,9 @@ export function TechniquesScreen({ navigation }: Props) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<TechniqueCategory | 'all'>('all');
 
-  function normalize(text: string) {
-    return text
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .toLowerCase();
-  }
-
   const filtered = techniques.filter((t) => {
     const matchesCategory = category === 'all' || t.category === category;
-    const matchesSearch = normalize(t.title).includes(normalize(search));
+    const matchesSearch = normalizeSearch(t.title).includes(normalizeSearch(search));
     return matchesCategory && matchesSearch;
   });
 

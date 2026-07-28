@@ -14,6 +14,11 @@ import { OpenMatDetailScreen } from '../screens/OpenMatDetailScreen';
 import { OpenMatAddScreen } from '../screens/OpenMatAddScreen';
 import { TechniqueDetailScreen } from '../screens/TechniqueDetailScreen';
 import { NotebookScreen } from '../screens/NotebookScreen';
+import { SearchScreen } from '../screens/SearchScreen';
+import { NotificationsScreen } from '../screens/NotificationsScreen';
+import { MessagesScreen } from '../screens/MessagesScreen';
+import { ChatScreen } from '../screens/ChatScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { MainTabs } from './MainTabs';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -36,6 +41,11 @@ export function RootNavigator() {
       <Stack.Screen name="OpenMatAdd" component={OpenMatAddScreen} options={{ presentation: 'modal' }} />
       <Stack.Screen name="TechniqueDetail" component={TechniqueDetailScreen} />
       <Stack.Screen name="Notebook" component={NotebookScreen} />
+      <Stack.Screen name="Search" component={SearchScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="Messages" component={MessagesScreen} />
+      <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
       <Stack.Screen name="Compose" component={ComposeScreen} options={{ presentation: 'modal' }} />
     </Stack.Navigator>
   );

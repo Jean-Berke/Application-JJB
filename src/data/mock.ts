@@ -1,4 +1,4 @@
-import { Academy, Post, Profile } from './types';
+import { Academy, BeltPromotion, Post, Profile } from './types';
 
 export const currentUserId = 'u-me';
 
@@ -33,9 +33,11 @@ export const profiles: Profile[] = [
     stripes: 1,
     beltVerified: true,
     academyId: 'a-gb-lyon',
-    isCoach: false,
+    academyRole: 'assistant',
+    isCoach: true,
     followerCount: 42,
     followingCount: 63,
+    sessionCount: 58,
   },
   {
     id: 'u-marcio',
@@ -46,9 +48,11 @@ export const profiles: Profile[] = [
     stripes: 3,
     beltVerified: true,
     academyId: 'a-gb-lyon',
+    academyRole: 'head_coach',
     isCoach: true,
     followerCount: 1840,
     followingCount: 112,
+    sessionCount: 940,
   },
   {
     id: 'u-karim',
@@ -59,9 +63,11 @@ export const profiles: Profile[] = [
     stripes: 2,
     beltVerified: true,
     academyId: 'a-gb-lyon',
+    academyRole: 'student',
     isCoach: false,
     followerCount: 210,
     followingCount: 180,
+    sessionCount: 214,
   },
   {
     id: 'u-lea',
@@ -72,9 +78,41 @@ export const profiles: Profile[] = [
     stripes: 3,
     beltVerified: false,
     academyId: 'a-alliance-paris',
+    academyRole: 'student',
     isCoach: false,
     followerCount: 18,
     followingCount: 54,
+    sessionCount: 22,
+  },
+  {
+    id: 'u-thomas',
+    handle: 'thomas.gb',
+    displayName: 'Thomas Petit',
+    bio: 'Débutant motivé, 3 séances par semaine.',
+    belt: 'white',
+    stripes: 2,
+    beltVerified: true,
+    academyId: 'a-gb-lyon',
+    academyRole: 'student',
+    isCoach: false,
+    followerCount: 9,
+    followingCount: 21,
+    sessionCount: 47,
+  },
+  {
+    id: 'u-sophie',
+    handle: 'sophie.rolls',
+    displayName: 'Sophie Marchand',
+    bio: 'Ceinture bleue. Prépare son premier tournoi.',
+    belt: 'blue',
+    stripes: 0,
+    beltVerified: true,
+    academyId: 'a-gb-lyon',
+    academyRole: 'student',
+    isCoach: false,
+    followerCount: 33,
+    followingCount: 40,
+    sessionCount: 132,
   },
 ];
 
@@ -164,6 +202,49 @@ export const replies: Post[] = [
   },
 ];
 
+export const beltPromotions: BeltPromotion[] = [
+  {
+    id: 'bp-jeanb-history',
+    profileId: currentUserId,
+    belt: 'blue',
+    stripes: 1,
+    status: 'approved',
+    requestedAtLabel: '3 mars 2026',
+    reviewedBy: 'u-marcio',
+    reviewedAtLabel: '5 mars 2026',
+  },
+  {
+    id: 'bp-sophie-pending',
+    profileId: 'u-sophie',
+    belt: 'blue',
+    stripes: 1,
+    status: 'pending',
+    requestedAtLabel: 'il y a 2 j',
+    reviewedBy: null,
+    reviewedAtLabel: null,
+  },
+  {
+    id: 'bp-thomas-pending',
+    profileId: 'u-thomas',
+    belt: 'white',
+    stripes: 3,
+    status: 'pending',
+    requestedAtLabel: 'il y a 5 j',
+    reviewedBy: null,
+    reviewedAtLabel: null,
+  },
+  {
+    id: 'bp-karim-history',
+    profileId: 'u-karim',
+    belt: 'purple',
+    stripes: 2,
+    status: 'approved',
+    requestedAtLabel: '14 janvier 2026',
+    reviewedBy: 'u-marcio',
+    reviewedAtLabel: '16 janvier 2026',
+  },
+];
+
 export function getProfile(id: string): Profile {
   const found = profiles.find((p) => p.id === id);
   if (!found) throw new Error(`Unknown profile ${id}`);
@@ -173,4 +254,8 @@ export function getProfile(id: string): Profile {
 export function getAcademy(id: string | null): Academy | null {
   if (!id) return null;
   return academies.find((a) => a.id === id) ?? null;
+}
+
+export function getAcademyMembers(academyId: string): Profile[] {
+  return profiles.filter((p) => p.academyId === academyId);
 }

@@ -2,27 +2,22 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, FlatList, Pressable } from 'react-native';
 import { Search, MapPin, MessageCircle, Bell, ChevronRight } from 'lucide-react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { CompositeScreenProps } from '@react-navigation/native';
-import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
-import { RootStackParamList, MainTabParamList } from '../navigation/types';
+import { RootStackParamList } from '../navigation/types';
 import { colors, spacing, radii } from '../theme/tokens';
 import { fonts } from '../theme/fonts';
 import { Avatar } from '../components/ui/Avatar';
 import { Kicker, Meta } from '../components/ui/Typography';
 import { PostCard } from '../components/PostCard';
 import { useApp } from '../data/store';
-import { currentUserId, getProfile } from '../data/mock';
+import { currentUserId } from '../data/mock';
 
-type Props = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'Fil'>,
-  NativeStackScreenProps<RootStackParamList>
->;
+type Props = NativeStackScreenProps<RootStackParamList>;
 
 type Tab = 'pourToi' | 'suivis';
 
 export function HomeFeedScreen({ navigation }: Props) {
   const [tab, setTab] = useState<Tab>('pourToi');
-  const { posts, followedIds } = useApp();
+  const { posts, followedIds, getProfile } = useApp();
   const me = getProfile(currentUserId);
 
   const visiblePosts = tab === 'pourToi' ? posts : posts.filter((p) => followedIds.has(p.authorId));
@@ -45,7 +40,7 @@ export function HomeFeedScreen({ navigation }: Props) {
             <Bell color={colors.text} size={21} strokeWidth={1.6} />
             <View style={styles.dot} />
           </Pressable>
-          <Pressable onPress={() => navigation.navigate('Profil')}>
+          <Pressable onPress={() => navigation.navigate('UserProfile', { profileId: currentUserId })}>
             <Avatar name={me.displayName} size={28} />
           </Pressable>
         </View>

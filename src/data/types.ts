@@ -1,5 +1,7 @@
 import { BeltLevel } from '../theme/tokens';
 
+export type AcademyRole = 'student' | 'assistant' | 'head_coach';
+
 export type Profile = {
   id: string;
   handle: string;
@@ -9,9 +11,24 @@ export type Profile = {
   stripes: number;
   beltVerified: boolean;
   academyId: string | null;
+  academyRole: AcademyRole;
   isCoach: boolean;
   followerCount: number;
   followingCount: number;
+  sessionCount: number;
+};
+
+export type PromotionStatus = 'pending' | 'approved' | 'declined';
+
+export type BeltPromotion = {
+  id: string;
+  profileId: string;
+  belt: BeltLevel;
+  stripes: number;
+  status: PromotionStatus;
+  requestedAtLabel: string;
+  reviewedBy: string | null;
+  reviewedAtLabel: string | null;
 };
 
 export type Academy = {

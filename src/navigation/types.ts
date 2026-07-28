@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Thread: { postId: string };
   Compose: undefined;
   UserProfile: { profileId: string };
+  Verify: undefined;
 };
 
 export type MainTabParamList = {
@@ -14,4 +15,12 @@ export type MainTabParamList = {
   ComposeTab: undefined;
   Progression: undefined;
   Profil: undefined;
+};
+
+export type ClubTabParamList = {
+  ClubFil: undefined;
+  Eleves: undefined;
+  ClubComposeTab: undefined;
+  OpenMats: undefined;
+  Club: undefined;
 };

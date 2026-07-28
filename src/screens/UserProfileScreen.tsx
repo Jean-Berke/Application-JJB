@@ -13,15 +13,15 @@ import { Tag } from '../components/ui/Tag';
 import { ToggleButton } from '../components/ui/ToggleButton';
 import { PostCard } from '../components/PostCard';
 import { useApp } from '../data/store';
-import { getAcademy, getProfile } from '../data/mock';
+import { getAcademy } from '../data/mock';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'UserProfile'>;
 
 export function UserProfileScreen({ route, navigation }: Props) {
   const { profileId } = route.params;
+  const { posts, followedIds, toggleFollow, getProfile } = useApp();
   const profile = getProfile(profileId);
   const academy = getAcademy(profile.academyId);
-  const { posts, followedIds, toggleFollow } = useApp();
   const userPosts = posts.filter((p) => p.authorId === profileId);
   const isFollowing = followedIds.has(profileId);
 

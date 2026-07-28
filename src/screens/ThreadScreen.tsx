@@ -20,13 +20,12 @@ import { BeltBadge } from '../components/ui/BeltBadge';
 import { VerifiedBadge } from '../components/ui/VerifiedBadge';
 import { H6 } from '../components/ui/Typography';
 import { useApp } from '../data/store';
-import { getProfile } from '../data/mock';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Thread'>;
 
 export function ThreadScreen({ route, navigation }: Props) {
   const { postId } = route.params;
-  const { posts, repliesFor } = useApp();
+  const { posts, repliesFor, getProfile } = useApp();
   const [draft, setDraft] = useState('');
 
   const post = posts.find((p) => p.id === postId);

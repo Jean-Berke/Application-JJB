@@ -8,7 +8,6 @@ import { BeltBadge } from './ui/BeltBadge';
 import { VerifiedBadge } from './ui/VerifiedBadge';
 import { Tag } from './ui/Tag';
 import { Post } from '../data/types';
-import { getProfile } from '../data/mock';
 import { useApp } from '../data/store';
 
 type Props = {
@@ -18,8 +17,8 @@ type Props = {
 };
 
 export function PostCard({ post, onPress, onPressAuthor }: Props) {
+  const { toggleLike, getProfile } = useApp();
   const author = getProfile(post.authorId);
-  const { toggleLike } = useApp();
 
   return (
     <Pressable onPress={onPress} style={styles.card}>

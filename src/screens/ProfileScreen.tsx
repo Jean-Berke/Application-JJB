@@ -13,7 +13,7 @@ import { VerifiedBadge } from '../components/ui/VerifiedBadge';
 import { Button } from '../components/ui/Button';
 import { PostCard } from '../components/PostCard';
 import { useApp } from '../data/store';
-import { currentUserId, getAcademy, getProfile } from '../data/mock';
+import { currentUserId, getAcademy } from '../data/mock';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Profil'>,
@@ -21,9 +21,9 @@ type Props = CompositeScreenProps<
 >;
 
 export function ProfileScreen({ navigation }: Props) {
+  const { posts, getProfile, setViewMode } = useApp();
   const me = getProfile(currentUserId);
   const academy = getAcademy(me.academyId);
-  const { posts } = useApp();
   const myPosts = posts.filter((p) => p.authorId === currentUserId);
 
   return (
@@ -36,6 +36,15 @@ export function ProfileScreen({ navigation }: Props) {
           </View>
           <View style={styles.headerActions}>
             <Button label="Modifier" variant="secondary" block={false} style={styles.editButton} />
+            {me.isCoach && (
+              <Button
+                label="Vue club"
+                variant="secondary"
+                block={false}
+                style={styles.editButton}
+                onPress={() => setViewMode('club')}
+              />
+            )}
             <Pressable style={styles.iconButton}>
               <Settings color={colors.text} size={18} />
             </Pressable>
@@ -49,9 +58,9 @@ export function ProfileScreen({ navigation }: Props) {
           </View>
           <Text style={styles.handle}>@{me.handle}</Text>
 
-          <View style={styles.beltRow}>
+          <Pressable style={styles.beltRow} onPress={() => navigation.navigate('Verify')}>
             <BeltBadge belt={me.belt} stripes={me.stripes} width={72} height={20} />
-          </View>
+          </Pressable>
 
           {!!me.bio && <Text style={styles.bio}>{me.bio}</Text>}
 
@@ -110,7 +119,7 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   name: { fontFamily: fonts.condensedBold, fontSize: 21, color: colors.text },
   handle: { fontFamily: fonts.bodyRegular, fontSize: 13, color: colors.textMuted, marginTop: 2 },
-  beltRow: { marginTop: spacing[3] },
+  beltRow: { marginTop: spacing[3], alignSelf: 'flex-start' },
   bio: { fontFamily: fonts.bodyRegular, fontSize: 14, color: colors.text, marginTop: spacing[3], lineHeight: 20 },
   academy: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.textMuted, marginTop: spacing[2] },
   counts: { flexDirection: 'row', gap: spacing[4], marginTop: spacing[3] },

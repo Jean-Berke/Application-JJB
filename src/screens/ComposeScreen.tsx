@@ -8,7 +8,7 @@ import { fonts } from '../theme/fonts';
 import { Avatar } from '../components/ui/Avatar';
 import { BeltBadge } from '../components/ui/BeltBadge';
 import { useApp } from '../data/store';
-import { currentUserId, getProfile } from '../data/mock';
+import { currentUserId } from '../data/mock';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Compose'>;
 
@@ -16,7 +16,7 @@ const MAX_LENGTH = 280;
 
 export function ComposeScreen({ navigation }: Props) {
   const [body, setBody] = useState('');
-  const { addPost } = useApp();
+  const { addPost, getProfile } = useApp();
   const me = getProfile(currentUserId);
 
   function handlePublish() {

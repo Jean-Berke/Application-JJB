@@ -8,6 +8,7 @@ import { OnboardingScreen } from '../screens/onboarding/OnboardingScreen';
 import { ThreadScreen } from '../screens/ThreadScreen';
 import { ComposeScreen } from '../screens/ComposeScreen';
 import { UserProfileScreen } from '../screens/UserProfileScreen';
+import { VerifyScreen } from '../screens/VerifyScreen';
 import { MainTabs } from './MainTabs';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -24,6 +25,7 @@ export function RootNavigator() {
       <Stack.Screen name="Main" component={MainTabs} />
       <Stack.Screen name="Thread" component={ThreadScreen} />
       <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+      <Stack.Screen name="Verify" component={VerifyScreen} />
       <Stack.Screen name="Compose" component={ComposeScreen} options={{ presentation: 'modal' }} />
     </Stack.Navigator>
   );

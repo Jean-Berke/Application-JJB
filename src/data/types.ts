@@ -77,6 +77,52 @@ export const openMatFormatLabels: Record<OpenMatFormat, string> = {
   both: 'Gi & No-gi',
 };
 
+export type TechniqueCategory = 'guards' | 'passes' | 'submissions' | 'takedowns' | 'escapes';
+
+export const techniqueCategoryLabels: Record<TechniqueCategory, string> = {
+  guards: 'Gardes',
+  passes: 'Passages',
+  submissions: 'Soumissions',
+  takedowns: 'Amenées au sol',
+  escapes: 'Sorties',
+};
+
+export type Technique = {
+  id: string;
+  title: string;
+  category: TechniqueCategory;
+  position: string;
+  beltLevel: BeltLevel;
+  durationLabel: string;
+  description: string;
+  instructorId: string;
+  viewCount: number;
+  steps: string[];
+};
+
+export type NotebookStatus = 'to_review' | 'in_progress' | 'mastered';
+
+export const notebookStatusLabels: Record<NotebookStatus, string> = {
+  to_review: 'À revoir',
+  in_progress: 'En cours',
+  mastered: 'Maîtrisée',
+};
+
+export const notebookStatusOrder: NotebookStatus[] = ['to_review', 'in_progress', 'mastered'];
+
+export type NotebookEntry = {
+  id: string;
+  profileId: string;
+  techniqueId: string | null;
+  title: string;
+  category: string;
+  status: NotebookStatus;
+  isWeakness: boolean;
+  note: string;
+  drillCount: number;
+  lastDrilledLabel: string | null;
+};
+
 export type MediaType = 'video' | 'photo';
 
 export type Post = {

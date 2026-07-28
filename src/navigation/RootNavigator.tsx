@@ -12,6 +12,8 @@ import { VerifyScreen } from '../screens/VerifyScreen';
 import { OpenMatsScreen } from '../screens/OpenMatsScreen';
 import { OpenMatDetailScreen } from '../screens/OpenMatDetailScreen';
 import { OpenMatAddScreen } from '../screens/OpenMatAddScreen';
+import { TechniqueDetailScreen } from '../screens/TechniqueDetailScreen';
+import { NotebookScreen } from '../screens/NotebookScreen';
 import { MainTabs } from './MainTabs';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -32,6 +34,8 @@ export function RootNavigator() {
       <Stack.Screen name="OpenMats" component={OpenMatsScreen} />
       <Stack.Screen name="OpenMatDetail" component={OpenMatDetailScreen} />
       <Stack.Screen name="OpenMatAdd" component={OpenMatAddScreen} options={{ presentation: 'modal' }} />
+      <Stack.Screen name="TechniqueDetail" component={TechniqueDetailScreen} />
+      <Stack.Screen name="Notebook" component={NotebookScreen} />
       <Stack.Screen name="Compose" component={ComposeScreen} options={{ presentation: 'modal' }} />
     </Stack.Navigator>
   );

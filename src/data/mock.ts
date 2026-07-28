@@ -1,4 +1,4 @@
-import { Academy, BeltPromotion, OpenMat, Post, Profile } from './types';
+import { Academy, BeltPromotion, NotebookEntry, OpenMat, Post, Profile, Technique } from './types';
 
 export const currentUserId = 'u-me';
 
@@ -324,6 +324,152 @@ export const openMats: OpenMat[] = [
   },
 ];
 
+export const techniques: Technique[] = [
+  {
+    id: 't-1',
+    title: 'Passage toréador',
+    category: 'passes',
+    position: 'Garde ouverte',
+    beltLevel: 'white',
+    durationLabel: '6:10',
+    description:
+      'Contrôlez la hanche avant les jambes : posez les mains sur les cuisses adverses, coupez les hanches sur le côté et pivotez pour prendre le dos de la garde.',
+    instructorId: 'u-marcio',
+    viewCount: 4210,
+    steps: [
+      'Saisissez les deux chevilles adverses et posez vos genoux contre ses fessiers.',
+      'Poussez les jambes sur un côté en gardant les hanches basses.',
+      'Pivotez autour de la jambe contrôlée pour passer derrière la garde.',
+      'Stabilisez en side control avant de progresser vers le contrôle complet.',
+    ],
+  },
+  {
+    id: 't-2',
+    title: 'Triangle',
+    category: 'submissions',
+    position: 'Garde fermée',
+    beltLevel: 'blue',
+    durationLabel: '8:45',
+    description:
+      'Le triangle se ferme avec la hanche qui pivote sous l’épaule adverse, pas avec la force des bras.',
+    instructorId: 'u-karim',
+    viewCount: 3110,
+    steps: [
+      'Contrôlez un poignet et poussez l’autre épaule vers le bas.',
+      'Passez une jambe derrière la nuque en gardant l’angle serré.',
+      'Verrouillez le triangle en pliant le genou vers le sol.',
+      'Pivotez la hanche à 90° pour serrer la soumission sans les bras.',
+    ],
+  },
+  {
+    id: 't-3',
+    title: 'Étranglement croisé',
+    category: 'submissions',
+    position: 'Garde fermée',
+    beltLevel: 'white',
+    durationLabel: '5:20',
+    description: 'Le grand classique du gi : deux prises croisées profondes suffisent, pas besoin de force.',
+    instructorId: 'u-marcio',
+    viewCount: 2870,
+    steps: [
+      'Saisissez profondément un col avec chaque main en croisant les poignets.',
+      'Ramenez les coudes vers votre torse pour resserrer.',
+      'Tirez la tête adverse vers vous en gardant la garde fermée.',
+      'Serrez progressivement jusqu’à la soumission.',
+    ],
+  },
+  {
+    id: 't-4',
+    title: 'Berimbolo',
+    category: 'guards',
+    position: 'De la Broche',
+    beltLevel: 'purple',
+    durationLabel: '11:02',
+    description: 'Un classique moderne pour prendre le dos depuis la garde de la broche.',
+    instructorId: 'u-karim',
+    viewCount: 1980,
+    steps: [
+      'Installez une garde de la broche solide avec un crochet profond.',
+      'Invitez le retournement en basculant sous l’adversaire.',
+      'Suivez le mouvement circulaire jusqu’à passer derrière.',
+      'Prenez les deux crochets pour le contrôle du dos.',
+    ],
+  },
+  {
+    id: 't-5',
+    title: 'Amenée simple jambe',
+    category: 'takedowns',
+    position: 'Debout',
+    beltLevel: 'white',
+    durationLabel: '4:55',
+    description: 'Un takedown fiable pour ramener le combat au sol en sécurité.',
+    instructorId: 'u-marcio',
+    viewCount: 1540,
+    steps: [
+      'Changez de niveau en gardant le dos droit.',
+      'Saisissez la jambe avant derrière le genou.',
+      'Poussez l’épaule dans la hanche adverse pour déséquilibrer.',
+      'Amenez au sol en gardant le contrôle de la jambe.',
+    ],
+  },
+  {
+    id: 't-6',
+    title: 'Sortie sous side control',
+    category: 'escapes',
+    position: 'Side control',
+    beltLevel: 'blue',
+    durationLabel: '7:30',
+    description: 'Récupérez la garde en recréant de l’espace avec le cadre du bras et du genou.',
+    instructorId: 'u-karim',
+    viewCount: 2260,
+    steps: [
+      'Placez un cadre avec l’avant-bras contre la hanche adverse.',
+      'Ramenez le genou opposé pour créer un espace.',
+      'Pivotez sur l’épaule pour faire face à l’adversaire.',
+      'Récupérez la garde fermée ou la demi-garde.',
+    ],
+  },
+];
+
+export const notebookEntries: NotebookEntry[] = [
+  {
+    id: 'nb-1',
+    profileId: currentUserId,
+    techniqueId: 't-2',
+    title: 'Triangle',
+    category: 'Soumissions',
+    status: 'in_progress',
+    isWeakness: true,
+    note: 'Je perds l’angle quand l’adversaire pose la main au sol. Travailler le pivot de hanche.',
+    drillCount: 12,
+    lastDrilledLabel: 'il y a 3 j',
+  },
+  {
+    id: 'nb-2',
+    profileId: currentUserId,
+    techniqueId: 't-1',
+    title: 'Passage toréador',
+    category: 'Passages',
+    status: 'mastered',
+    isWeakness: false,
+    note: 'Bien acquis, à refaire de temps en temps pour garder le timing.',
+    drillCount: 34,
+    lastDrilledLabel: 'il y a 1 sem',
+  },
+  {
+    id: 'nb-3',
+    profileId: currentUserId,
+    techniqueId: 't-6',
+    title: 'Sortie sous side control',
+    category: 'Sorties',
+    status: 'to_review',
+    isWeakness: true,
+    note: 'Toujours en retard sur le cadre, je le pose trop tard.',
+    drillCount: 5,
+    lastDrilledLabel: null,
+  },
+];
+
 export function getProfile(id: string): Profile {
   const found = profiles.find((p) => p.id === id);
   if (!found) throw new Error(`Unknown profile ${id}`);
@@ -337,4 +483,10 @@ export function getAcademy(id: string | null): Academy | null {
 
 export function getAcademyMembers(academyId: string): Profile[] {
   return profiles.filter((p) => p.academyId === academyId);
+}
+
+export function getTechnique(id: string): Technique {
+  const found = techniques.find((t) => t.id === id);
+  if (!found) throw new Error(`Unknown technique ${id}`);
+  return found;
 }

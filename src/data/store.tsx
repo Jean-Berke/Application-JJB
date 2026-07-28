@@ -6,8 +6,20 @@ import {
   profiles as initialProfiles,
   beltPromotions as initialPromotions,
   openMats as initialOpenMats,
+  notebookEntries as initialNotebookEntries,
 } from './mock';
-import { BeltPromotion, OpenMat, OpenMatFormat, OpenMatLevel, Post, Profile } from './types';
+import {
+  BeltPromotion,
+  NotebookEntry,
+  NotebookStatus,
+  notebookStatusOrder,
+  OpenMat,
+  OpenMatFormat,
+  OpenMatLevel,
+  Post,
+  Profile,
+  Technique,
+} from './types';
 
 export type ViewMode = 'practitioner' | 'club';
 
@@ -28,6 +40,7 @@ type AppState = {
   profiles: Profile[];
   promotions: BeltPromotion[];
   openMats: OpenMat[];
+  notebookEntries: NotebookEntry[];
   followedIds: Set<string>;
   reminderIds: Set<string>;
   viewMode: ViewMode;
@@ -44,6 +57,8 @@ type AppState = {
   toggleAttendance: (openMatId: string) => void;
   toggleReminder: (openMatId: string) => void;
   addOpenMat: (data: NewOpenMat) => void;
+  addToNotebook: (technique: Technique) => void;
+  cycleNotebookStatus: (entryId: string) => void;
 };
 
 const AppContext = createContext<AppState | null>(null);
@@ -62,6 +77,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [promotions, setPromotions] = useState<BeltPromotion[]>(initialPromotions);
   const [openMats, setOpenMats] = useState<OpenMat[]>(initialOpenMats);
+  const [notebookEntries, setNotebookEntries] = useState<NotebookEntry[]>(initialNotebookEntries);
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set(['u-marcio']));
   const [reminderIds, setReminderIds] = useState<Set<string>>(new Set(['om-1']));
   const [viewMode, setViewMode] = useState<ViewMode>('practitioner');
@@ -73,6 +89,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       profiles,
       promotions,
       openMats,
+      notebookEntries,
       followedIds,
       reminderIds,
       viewMode,
@@ -202,8 +219,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
         setOpenMats((list) => [newOpenMat, ...list]);
       },
+      addToNotebook: (technique: Technique) => {
+        setNotebookEntries((list) => {
+          if (list.some((e) => e.profileId === currentUserId && e.techniqueId === technique.id)) return list;
+          const newEntry: NotebookEntry = {
+            id: `nb-${Date.now()}`,
+            profileId: currentUserId,
+            techniqueId: technique.id,
+            title: technique.title,
+            category: technique.category,
+            status: 'to_review',
+            isWeakness: false,
+            note: '',
+            drillCount: 0,
+            lastDrilledLabel: null,
+          };
+          return [newEntry, ...list];
+        });
+      },
+      cycleNotebookStatus: (entryId: string) => {
+        setNotebookEntries((list) =>
+          list.map((entry) => {
+            if (entry.id !== entryId) return entry;
+            const currentIndex = notebookStatusOrder.indexOf(entry.status);
+            const nextStatus: NotebookStatus =
+              notebookStatusOrder[(currentIndex + 1) % notebookStatusOrder.length];
+            return { ...entry, status: nextStatus };
+          })
+        );
+      },
     }),
-    [posts, replies, profiles, promotions, openMats, followedIds, reminderIds, viewMode]
+    [posts, replies, profiles, promotions, openMats, notebookEntries, followedIds, reminderIds, viewMode]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

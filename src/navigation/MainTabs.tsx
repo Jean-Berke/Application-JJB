@@ -11,7 +11,8 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 import { StudentsScreen } from '../screens/StudentsScreen';
 import { ClubHomeScreen } from '../screens/ClubHomeScreen';
 import { OpenMatsScreen } from '../screens/OpenMatsScreen';
-import { PlaceholderScreen } from '../screens/PlaceholderScreen';
+import { TechniquesScreen } from '../screens/TechniquesScreen';
+import { ProgressionScreen } from '../screens/ProgressionScreen';
 import { useApp } from '../data/store';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -24,14 +25,6 @@ function ComposeTabButton() {
       <Plus color={colors.onAccent} size={22} strokeWidth={2.2} />
     </Pressable>
   );
-}
-
-function TechniquesPlaceholder() {
-  return <PlaceholderScreen title="Techniques" />;
-}
-
-function ProgressionPlaceholder() {
-  return <PlaceholderScreen title="Progression" />;
 }
 
 function EmptyScreen() {
@@ -96,7 +89,7 @@ function PractitionerTabs() {
       />
       <Tab.Screen
         name="Techniques"
-        component={TechniquesPlaceholder}
+        component={TechniquesScreen}
         options={{ tabBarIcon: ({ color, size }) => <BookOpen color={color} size={size} strokeWidth={1.6} /> }}
       />
       <Tab.Screen
@@ -112,7 +105,7 @@ function PractitionerTabs() {
       />
       <Tab.Screen
         name="Progression"
-        component={ProgressionPlaceholder}
+        component={ProgressionScreen}
         options={{ tabBarIcon: ({ color, size }) => <BarChart2 color={color} size={size} strokeWidth={1.6} /> }}
       />
       <Tab.Screen

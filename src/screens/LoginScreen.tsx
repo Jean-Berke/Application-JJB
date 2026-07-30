@@ -8,13 +8,33 @@ import { fonts } from '../theme/fonts';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { H4, Body } from '../components/ui/Typography';
+import { useAuth } from '../auth/AuthProvider';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const canSubmit = email.length > 0 && password.length > 0;
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const canSubmit = email.length > 0 && password.length > 0 && !submitting;
+
+  async function handleSubmit() {
+    setError(null);
+    setSubmitting(true);
+    const { error: signInError } = await signIn(email.trim(), password);
+    setSubmitting(false);
+    if (signInError) {
+      setError(
+        signInError.includes('Invalid login credentials')
+          ? 'E-mail ou mot de passe incorrect.'
+          : signInError
+      );
+      return;
+    }
+    // La navigation bascule automatiquement vers l'app une fois la session active.
+  }
 
   return (
     <SafeAreaView style={styles.root}>
@@ -29,14 +49,16 @@ export function LoginScreen({ navigation }: Props) {
         <Input label="E-mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" placeholder="toi@exemple.com" />
         <Input label="Mot de passe" value={password} onChangeText={setPassword} secureTextEntry placeholder="••••••••" />
 
+        {error && <Text style={styles.error}>{error}</Text>}
+
         <Pressable style={styles.forgot}>
           <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
         </Pressable>
 
         <Button
-          label="Se connecter"
+          label={submitting ? 'Connexion…' : 'Se connecter'}
           disabled={!canSubmit}
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Main' }] })}
+          onPress={handleSubmit}
           style={styles.submit}
         />
 
@@ -46,8 +68,8 @@ export function LoginScreen({ navigation }: Props) {
           <View style={styles.separatorLine} />
         </View>
 
-        <Button label="Continuer avec Apple" variant="secondary" style={styles.socialSpacing} />
-        <Button label="Continuer avec Google" variant="secondary" />
+        <Button label="Continuer avec Apple" variant="secondary" disabled style={styles.socialSpacing} />
+        <Button label="Continuer avec Google" variant="secondary" disabled />
       </View>
     </SafeAreaView>
   );
@@ -59,6 +81,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.screenPadding + 6, paddingTop: spacing[8] },
   title: { marginBottom: spacing[1] },
   subtitle: { color: colors.textMuted, marginBottom: spacing[8] },
+  error: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.accent, marginBottom: spacing[3] },
   forgot: { alignSelf: 'flex-end', marginBottom: spacing[6] },
   forgotText: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.accent },
   submit: { marginBottom: spacing[8] },

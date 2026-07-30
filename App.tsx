@@ -12,6 +12,7 @@ import {
 } from '@expo-google-fonts/barlow-condensed';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { AppProvider } from './src/data/store';
+import { AuthProvider } from './src/auth/AuthProvider';
 import { colors } from './src/theme/tokens';
 
 const navigationTheme: Theme = {
@@ -43,12 +44,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <AppProvider>
-        <NavigationContainer theme={navigationTheme}>
-          <RootNavigator />
-          <StatusBar style="light" />
-        </NavigationContainer>
-      </AppProvider>
+      <AuthProvider>
+        <AppProvider>
+          <NavigationContainer theme={navigationTheme}>
+            <RootNavigator />
+            <StatusBar style="light" />
+          </NavigationContainer>
+        </AppProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

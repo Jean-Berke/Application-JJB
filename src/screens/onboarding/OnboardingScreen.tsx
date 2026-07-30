@@ -12,14 +12,27 @@ import { Tag } from '../../components/ui/Tag';
 import { BeltBadge } from '../../components/ui/BeltBadge';
 import { H4, Body, Meta } from '../../components/ui/Typography';
 import { academies } from '../../data/mock';
+import { useAuth } from '../../auth/AuthProvider';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
 
 const BELTS: BeltLevel[] = ['white', 'blue', 'purple', 'brown', 'black'];
 const INTERESTS = ['Gardes', 'Passages', 'Soumissions', 'Amenées au sol', 'Sorties', 'No-Gi', 'Compétition', 'Défense'];
 
-export function OnboardingScreen({ navigation }: Props) {
-  const [step, setStep] = useState(1);
+export function OnboardingScreen(_props: Props) {
+  const { session, signUp, updateProfile } = useAuth();
+  const hasAccountAlready = !!session;
+  const [step, setStep] = useState(hasAccountAlready ? 1 : 0);
+  const visibleSteps = hasAccountAlready ? [1, 2, 3] : [0, 1, 2, 3];
+
+  const [displayName, setDisplayName] = useState('');
+  const [handle, setHandle] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   const [belt, setBelt] = useState<BeltLevel>('white');
   const [stripes, setStripes] = useState(0);
   const [academySearch, setAcademySearch] = useState('');
@@ -27,7 +40,13 @@ export function OnboardingScreen({ navigation }: Props) {
   const [interests, setInterests] = useState<string[]>([]);
   const [remindersOn, setRemindersOn] = useState(true);
 
-  const canContinue = step === 3 ? interests.length > 0 : true;
+  const canContinue =
+    step === 0
+      ? displayName.trim().length > 0 && handle.trim().length > 0 && email.trim().length > 0 && password.length >= 6
+      : step === 3
+        ? interests.length > 0
+        : true;
+
   const filteredAcademies = academies.filter((a) =>
     a.name.toLowerCase().includes(academySearch.toLowerCase())
   );
@@ -36,24 +55,89 @@ export function OnboardingScreen({ navigation }: Props) {
     setInterests((prev) => (prev.includes(label) ? prev.filter((i) => i !== label) : [...prev, label]));
   }
 
-  function handleContinue() {
+  async function handleContinue() {
+    if (step === 0) {
+      setAuthError(null);
+      setSubmitting(true);
+      const result = await signUp(email.trim(), password, handle.trim(), displayName.trim());
+      setSubmitting(false);
+      if (result.error) {
+        setAuthError(result.error);
+        return;
+      }
+      if (result.needsEmailConfirmation) {
+        setNeedsEmailConfirmation(true);
+        return;
+      }
+      setStep(1);
+      return;
+    }
+
     if (step < 3) {
       setStep(step + 1);
-    } else {
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      return;
     }
+
+    setSubmitting(true);
+    await updateProfile({ belt, stripes, onboarding_completed: true });
+    setSubmitting(false);
+    // La navigation bascule automatiquement vers l'app une fois onboarding_completed à true.
+  }
+
+  if (needsEmailConfirmation) {
+    return (
+      <SafeAreaView style={styles.root}>
+        <View style={styles.confirmWrap}>
+          <H4 style={styles.title}>Vérifie ta boîte mail</H4>
+          <Body style={styles.subtitle}>
+            On t'a envoyé un lien de confirmation à {email}. Clique dessus, puis reviens te connecter.
+          </Body>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
     <SafeAreaView style={styles.root}>
       <View style={styles.progressRow}>
-        {[1, 2, 3].map((s) => (
+        {visibleSteps.map((s) => (
           <View key={s} style={[styles.progressSegment, s <= step && styles.progressSegmentActive]} />
         ))}
       </View>
-      <Text style={styles.stepLabel}>Étape {step} / 3</Text>
+      <Text style={styles.stepLabel}>Étape {visibleSteps.indexOf(step) + 1} / {visibleSteps.length}</Text>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        {step === 0 && (
+          <>
+            <H4 style={styles.title}>Ton compte</H4>
+            <Body style={styles.subtitle}>Pour retrouver ton profil et ton fil à chaque connexion.</Body>
+            <Input label="Nom affiché" value={displayName} onChangeText={setDisplayName} placeholder="ex. Jean B." />
+            <Input
+              label="Identifiant"
+              value={handle}
+              onChangeText={(t) => setHandle(t.replace(/[^a-zA-Z0-9._]/g, ''))}
+              placeholder="ex. jeanb"
+              autoCapitalize="none"
+            />
+            <Input
+              label="E-mail"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              placeholder="toi@exemple.com"
+            />
+            <Input
+              label="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+              placeholder="6 caractères minimum"
+            />
+            {authError && <Text style={styles.error}>{authError}</Text>}
+          </>
+        )}
+
         {step === 1 && (
           <>
             <H4 style={styles.title}>Quelle est ta ceinture ?</H4>
@@ -147,8 +231,8 @@ export function OnboardingScreen({ navigation }: Props) {
 
       <View style={styles.footer}>
         <Button
-          label={step < 3 ? 'Continuer' : 'Entrer dans OSS'}
-          disabled={!canContinue}
+          label={submitting ? 'Un instant…' : step < 3 ? 'Continuer' : 'Entrer dans OSS'}
+          disabled={!canContinue || submitting}
           onPress={handleContinue}
         />
       </View>
@@ -172,6 +256,8 @@ const styles = StyleSheet.create({
   scrollContent: { padding: spacing.screenPadding + 6, paddingBottom: spacing[8] },
   title: { marginBottom: spacing[1] },
   subtitle: { color: colors.textMuted, marginBottom: spacing[6] },
+  error: { fontFamily: fonts.bodyMedium, fontSize: 13, color: colors.accent, marginTop: spacing[2] },
+  confirmWrap: { flex: 1, justifyContent: 'center', paddingHorizontal: spacing.screenPadding + 6 },
   beltRow: {
     flexDirection: 'row',
     alignItems: 'center',

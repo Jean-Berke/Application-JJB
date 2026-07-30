@@ -11,6 +11,7 @@ import { Switch } from '../components/ui/Switch';
 import { Meta } from '../components/ui/Typography';
 import { useApp } from '../data/store';
 import { currentUserId, getAcademy } from '../data/mock';
+import { useAuth } from '../auth/AuthProvider';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Settings'>;
 
@@ -24,6 +25,7 @@ const PRIVACY_OPTIONS: { key: PrivacyOption; label: string }[] = [
 
 export function SettingsScreen({ navigation }: Props) {
   const { getProfile } = useApp();
+  const { session, signOut } = useAuth();
   const me = getProfile(currentUserId);
   const academy = getAcademy(me.academyId);
 
@@ -49,7 +51,7 @@ export function SettingsScreen({ navigation }: Props) {
           <View style={styles.row}>
             <Mail color={colors.accent} size={17} />
             <Text style={styles.rowLabel}>E-mail</Text>
-            <Text style={styles.rowValue}>jeanberkea@gmail.com</Text>
+            <Text style={styles.rowValue}>{session?.user?.email ?? '—'}</Text>
             <ChevronRight color={colors.textTertiary} size={16} />
           </View>
           <View style={styles.divider} />
@@ -129,11 +131,7 @@ export function SettingsScreen({ navigation }: Props) {
         </Card>
 
         <Button label="Aide & contact" variant="secondary" style={styles.helpButton} />
-        <Button
-          label="Se déconnecter"
-          variant="ghost"
-          onPress={() => navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] })}
-        />
+        <Button label="Se déconnecter" variant="ghost" onPress={signOut} />
       </ScrollView>
     </SafeAreaView>
   );

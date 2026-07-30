@@ -25,7 +25,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Thread'>;
 
 export function ThreadScreen({ route, navigation }: Props) {
   const { postId } = route.params;
-  const { posts, repliesFor, getProfile } = useApp();
+  const { posts, repliesFor, getProfile, addPost } = useApp();
   const [draft, setDraft] = useState('');
 
   const post = posts.find((p) => p.id === postId);
@@ -33,6 +33,13 @@ export function ThreadScreen({ route, navigation }: Props) {
 
   const author = getProfile(post.authorId);
   const threadReplies = repliesFor(postId);
+
+  function handleSendReply() {
+    const trimmed = draft.trim();
+    if (!trimmed) return;
+    addPost(trimmed, postId);
+    setDraft('');
+  }
 
   return (
     <SafeAreaView style={styles.root}>
@@ -98,7 +105,7 @@ export function ThreadScreen({ route, navigation }: Props) {
             style={styles.composeInput}
             multiline
           />
-          <Pressable style={styles.sendButton} disabled={!draft.trim()}>
+          <Pressable style={styles.sendButton} onPress={handleSendReply} disabled={!draft.trim()}>
             <Send color={draft.trim() ? colors.accent : colors.textTertiary} size={20} />
           </Pressable>
         </View>

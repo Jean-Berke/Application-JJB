@@ -13,7 +13,15 @@ import {
   Technique,
 } from './types';
 
-export const currentUserId = 'u-me';
+// Mutable on purpose: once the real Supabase auth session resolves, the
+// store calls setCurrentUserId with the real user id. Every screen imports
+// `currentUserId` as a named import, which stays a live binding onto this
+// value, so no other file needs to change.
+export let currentUserId = 'u-me';
+
+export function setCurrentUserId(id: string) {
+  currentUserId = id;
+}
 
 export const academies: Academy[] = [
   {

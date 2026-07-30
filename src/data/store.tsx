@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
   currentUserId,
+  setCurrentUserId,
   posts as initialPosts,
   replies as initialReplies,
   profiles as initialProfiles,
@@ -28,6 +29,52 @@ import {
   Profile,
   Technique,
 } from './types';
+import { useAuth } from '../auth/AuthProvider';
+import { supabase } from '../lib/supabase';
+import { formatRelativeTime } from '../utils/date';
+
+type PostRow = {
+  id: string;
+  author_id: string;
+  body: string;
+  parent_id: string | null;
+  created_at: string;
+};
+
+type ProfileRow = {
+  id: string;
+  handle: string;
+  display_name: string;
+  bio: string;
+  belt: Profile['belt'];
+  stripes: number;
+  belt_verified: boolean;
+  is_coach: boolean;
+};
+
+type LikeRow = { post_id: string; profile_id: string };
+type FollowRow = { follower_id: string; followee_id: string };
+
+function remoteProfileToLocal(row: ProfileRow, followRows: FollowRow[]): Profile {
+  return {
+    id: row.id,
+    handle: row.handle,
+    displayName: row.display_name,
+    bio: row.bio,
+    belt: row.belt,
+    stripes: row.stripes,
+    beltVerified: row.belt_verified,
+    academyId: 'a-gb-lyon',
+    academyRole: row.is_coach ? 'assistant' : 'student',
+    isCoach: row.is_coach,
+    followerCount: followRows.filter((f) => f.followee_id === row.id).length,
+    followingCount: followRows.filter((f) => f.follower_id === row.id).length,
+    sessionCount: 0,
+    plan: null,
+    paymentStatus: null,
+    nextDueLabel: null,
+  };
+}
 
 export type ViewMode = 'practitioner' | 'club';
 
@@ -59,7 +106,7 @@ type AppState = {
   viewMode: ViewMode;
   toggleLike: (postId: string) => void;
   toggleFollow: (profileId: string) => void;
-  addPost: (body: string) => void;
+  addPost: (body: string, parentId?: string | null) => void;
   repliesFor: (postId: string) => Post[];
   getProfile: (id: string) => Profile;
   academyMembers: (academyId: string) => Profile[];
@@ -90,6 +137,7 @@ function toggleLikeIn(list: Post[], postId: string): Post[] {
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const { session, profile: remoteProfile } = useAuth();
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [replies, setReplies] = useState<Post[]>(initialReplies);
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
@@ -104,6 +152,88 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [reminderIds, setReminderIds] = useState<Set<string>>(new Set(['om-1']));
   const [openedConversationIds, setOpenedConversationIds] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>('practitioner');
+
+  const meId = session?.user?.id;
+
+  useEffect(() => {
+    if (meId) setCurrentUserId(meId);
+  }, [meId]);
+
+  // Merge the real signed-in profile into the local store so the still-mocked
+  // screens (Notebook, Verify, Progression, Settings, Students, Admin...)
+  // keep working unchanged against `getProfile(currentUserId)`.
+  useEffect(() => {
+    if (!remoteProfile) return;
+    setProfiles((list) => {
+      const withoutFixture = list.filter((p) => p.id !== 'u-me' && p.id !== remoteProfile.id);
+      const existing = list.find((p) => p.id === remoteProfile.id);
+      const merged: Profile = {
+        id: remoteProfile.id,
+        handle: remoteProfile.handle,
+        displayName: remoteProfile.display_name,
+        bio: remoteProfile.bio,
+        belt: remoteProfile.belt,
+        stripes: remoteProfile.stripes,
+        beltVerified: remoteProfile.belt_verified,
+        academyId: 'a-gb-lyon',
+        academyRole: remoteProfile.is_coach ? 'assistant' : 'student',
+        isCoach: remoteProfile.is_coach,
+        followerCount: existing?.followerCount ?? 0,
+        followingCount: existing?.followingCount ?? 0,
+        sessionCount: existing?.sessionCount ?? 0,
+        plan: existing?.plan ?? null,
+        paymentStatus: existing?.paymentStatus ?? null,
+        nextDueLabel: existing?.nextDueLabel ?? null,
+      };
+      return [merged, ...withoutFixture];
+    });
+  }, [remoteProfile]);
+
+  const fetchFeed = useCallback(async () => {
+    if (!meId) return;
+    const [postsRes, profilesRes, likesRes, followsRes] = await Promise.all([
+      supabase.from('posts').select('*').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('*'),
+      supabase.from('post_likes').select('*'),
+      supabase.from('follows').select('*'),
+    ]);
+
+    const postRows = (postsRes.data ?? []) as PostRow[];
+    const profileRows = (profilesRes.data ?? []) as ProfileRow[];
+    const likeRows = (likesRes.data ?? []) as LikeRow[];
+    const followRows = (followsRes.data ?? []) as FollowRow[];
+
+    function toPost(row: PostRow): Post {
+      return {
+        id: row.id,
+        authorId: row.author_id,
+        body: row.body,
+        parentId: row.parent_id,
+        techniqueTitle: null,
+        mediaType: null,
+        mediaCaption: null,
+        academyId: null,
+        pinned: false,
+        likeCount: likeRows.filter((l) => l.post_id === row.id).length,
+        replyCount: postRows.filter((r) => r.parent_id === row.id).length,
+        repostCount: 0,
+        createdAtLabel: formatRelativeTime(row.created_at),
+        liked: likeRows.some((l) => l.post_id === row.id && l.profile_id === meId),
+      };
+    }
+
+    setPosts(postRows.filter((r) => !r.parent_id).map(toPost));
+    setReplies(postRows.filter((r) => r.parent_id).map(toPost));
+    setFollowedIds(new Set(followRows.filter((f) => f.follower_id === meId).map((f) => f.followee_id)));
+
+    const remoteMapped = profileRows.map((row) => remoteProfileToLocal(row, followRows));
+    const remoteIds = new Set(remoteMapped.map((p) => p.id));
+    setProfiles((list) => [...remoteMapped, ...list.filter((p) => !remoteIds.has(p.id) && p.id !== 'u-me')]);
+  }, [meId]);
+
+  useEffect(() => {
+    fetchFeed();
+  }, [fetchFeed]);
 
   const value = useMemo<AppState>(
     () => ({
@@ -122,23 +252,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       openedConversationIds,
       viewMode,
       toggleLike: (postId: string) => {
+        const target = [...posts, ...replies].find((p) => p.id === postId);
+        const wasLiked = target?.liked ?? false;
         setPosts((list) => toggleLikeIn(list, postId));
         setReplies((list) => toggleLikeIn(list, postId));
+        if (meId) {
+          const write = wasLiked
+            ? supabase.from('post_likes').delete().eq('post_id', postId).eq('profile_id', meId)
+            : supabase.from('post_likes').insert({ post_id: postId, profile_id: meId });
+          write.then(() => fetchFeed());
+        }
       },
       toggleFollow: (profileId: string) => {
+        const wasFollowing = followedIds.has(profileId);
         setFollowedIds((prev) => {
           const next = new Set(prev);
           if (next.has(profileId)) next.delete(profileId);
           else next.add(profileId);
           return next;
         });
+        if (meId) {
+          const write = wasFollowing
+            ? supabase.from('follows').delete().eq('follower_id', meId).eq('followee_id', profileId)
+            : supabase.from('follows').insert({ follower_id: meId, followee_id: profileId });
+          write.then(() => fetchFeed());
+        }
       },
-      addPost: (body: string) => {
+      addPost: (body: string, parentId: string | null = null) => {
         const newPost: Post = {
           id: `p-${Date.now()}`,
           authorId: currentUserId,
           body,
-          parentId: null,
+          parentId,
           techniqueTitle: null,
           mediaType: null,
           mediaCaption: null,
@@ -150,7 +295,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           createdAtLabel: 'à l’instant',
           liked: false,
         };
-        setPosts((list) => [newPost, ...list]);
+        if (parentId) {
+          setReplies((list) => [...list, newPost]);
+        } else {
+          setPosts((list) => [newPost, ...list]);
+        }
+        if (meId) {
+          supabase.from('posts').insert({ author_id: meId, body, parent_id: parentId }).then(() => fetchFeed());
+        }
       },
       repliesFor: (postId: string) => replies.filter((r) => r.parentId === postId),
       getProfile: (id: string) => {
@@ -321,6 +473,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       reminderIds,
       openedConversationIds,
       viewMode,
+      meId,
+      fetchFeed,
     ]
   );
 

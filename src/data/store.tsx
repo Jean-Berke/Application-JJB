@@ -307,8 +307,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       repliesFor: (postId: string) => replies.filter((r) => r.parentId === postId),
       getProfile: (id: string) => {
         const found = profiles.find((p) => p.id === id);
-        if (!found) throw new Error(`Unknown profile ${id}`);
-        return found;
+        if (found) return found;
+        // Transient gap right after sign up/login: the real session is
+        // known before it's finished syncing into local `profiles` state.
+        // Build "me" straight from the auth profile instead of crashing.
+        if (remoteProfile && id === remoteProfile.id) {
+          return {
+            id: remoteProfile.id,
+            handle: remoteProfile.handle,
+            displayName: remoteProfile.display_name,
+            bio: remoteProfile.bio,
+            belt: remoteProfile.belt,
+            stripes: remoteProfile.stripes,
+            beltVerified: remoteProfile.belt_verified,
+            academyId: 'a-gb-lyon',
+            academyRole: remoteProfile.is_coach ? 'assistant' : 'student',
+            isCoach: remoteProfile.is_coach,
+            followerCount: 0,
+            followingCount: 0,
+            sessionCount: 0,
+            plan: null,
+            paymentStatus: null,
+            nextDueLabel: null,
+          };
+        }
+        throw new Error(`Unknown profile ${id}`);
       },
       academyMembers: (academyId: string) => profiles.filter((p) => p.academyId === academyId),
       requestVerification: (profileId: string) => {
@@ -474,6 +497,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       openedConversationIds,
       viewMode,
       meId,
+      remoteProfile,
       fetchFeed,
     ]
   );

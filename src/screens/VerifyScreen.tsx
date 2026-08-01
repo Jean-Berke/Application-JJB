@@ -20,7 +20,7 @@ export function VerifyScreen({ navigation }: Props) {
   const { getProfile, promotions, requestVerification, academyMembers } = useApp();
   const me = getProfile(currentUserId);
   const coachProfile = me.academyId
-    ? academyMembers(me.academyId).find((p) => p.academyRole === 'head_coach') ?? null
+    ? academyMembers(me.academyId).find((p) => p.isCoach && p.id !== me.id) ?? null
     : null;
 
   const pending = promotions.find((p) => p.profileId === currentUserId && p.status === 'pending');

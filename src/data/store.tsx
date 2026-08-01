@@ -14,6 +14,7 @@ import {
   attendanceToday as initialAttendance,
 } from './mock';
 import {
+  Academy,
   AppNotification,
   Attendance,
   BeltPromotion,
@@ -27,6 +28,7 @@ import {
   OpenMatLevel,
   Post,
   Profile,
+  PromotionStatus,
   Technique,
 } from './types';
 import { useAuth } from '../auth/AuthProvider';
@@ -50,10 +52,22 @@ type ProfileRow = {
   stripes: number;
   belt_verified: boolean;
   is_coach: boolean;
+  academy_id: string | null;
 };
 
 type LikeRow = { post_id: string; profile_id: string };
 type FollowRow = { follower_id: string; followee_id: string };
+type AcademyRow = { id: string; name: string; slug: string; neighborhood: string; city: string; verified: boolean };
+type PromotionRow = {
+  id: string;
+  profile_id: string;
+  belt: Profile['belt'];
+  stripes: number;
+  status: PromotionStatus;
+  requested_at: string;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+};
 
 function remoteProfileToLocal(row: ProfileRow, followRows: FollowRow[]): Profile {
   return {
@@ -64,7 +78,7 @@ function remoteProfileToLocal(row: ProfileRow, followRows: FollowRow[]): Profile
     belt: row.belt,
     stripes: row.stripes,
     beltVerified: row.belt_verified,
-    academyId: 'a-gb-lyon',
+    academyId: row.academy_id,
     academyRole: row.is_coach ? 'assistant' : 'student',
     isCoach: row.is_coach,
     followerCount: followRows.filter((f) => f.followee_id === row.id).length,
@@ -73,6 +87,31 @@ function remoteProfileToLocal(row: ProfileRow, followRows: FollowRow[]): Profile
     plan: null,
     paymentStatus: null,
     nextDueLabel: null,
+  };
+}
+
+function remoteAcademyToLocal(row: AcademyRow, profileRows: ProfileRow[]): Academy {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    neighborhood: row.neighborhood,
+    city: row.city,
+    verified: row.verified,
+    memberCount: profileRows.filter((p) => p.academy_id === row.id).length,
+  };
+}
+
+function remotePromotionToLocal(row: PromotionRow): BeltPromotion {
+  return {
+    id: row.id,
+    profileId: row.profile_id,
+    belt: row.belt,
+    stripes: row.stripes,
+    status: row.status,
+    requestedAtLabel: formatRelativeTime(row.requested_at),
+    reviewedBy: row.reviewed_by,
+    reviewedAtLabel: row.reviewed_at ? formatRelativeTime(row.reviewed_at) : null,
   };
 }
 
@@ -94,6 +133,7 @@ type AppState = {
   replies: Post[];
   profiles: Profile[];
   promotions: BeltPromotion[];
+  academies: Academy[];
   openMats: OpenMat[];
   notebookEntries: NotebookEntry[];
   notifications: AppNotification[];
@@ -109,6 +149,7 @@ type AppState = {
   addPost: (body: string, parentId?: string | null) => void;
   repliesFor: (postId: string) => Post[];
   getProfile: (id: string) => Profile;
+  getAcademy: (id: string | null) => Academy | undefined;
   academyMembers: (academyId: string) => Profile[];
   requestVerification: (profileId: string) => void;
   approvePromotion: (promotionId: string) => void;
@@ -142,6 +183,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [replies, setReplies] = useState<Post[]>(initialReplies);
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [promotions, setPromotions] = useState<BeltPromotion[]>(initialPromotions);
+  const [academies, setAcademies] = useState<Academy[]>([]);
   const [openMats, setOpenMats] = useState<OpenMat[]>(initialOpenMats);
   const [notebookEntries, setNotebookEntries] = useState<NotebookEntry[]>(initialNotebookEntries);
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
@@ -175,7 +217,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         belt: remoteProfile.belt,
         stripes: remoteProfile.stripes,
         beltVerified: remoteProfile.belt_verified,
-        academyId: 'a-gb-lyon',
+        academyId: remoteProfile.academy_id,
         academyRole: remoteProfile.is_coach ? 'assistant' : 'student',
         isCoach: remoteProfile.is_coach,
         followerCount: existing?.followerCount ?? 0,
@@ -191,17 +233,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const fetchFeed = useCallback(async () => {
     if (!meId) return;
-    const [postsRes, profilesRes, likesRes, followsRes] = await Promise.all([
+    const [postsRes, profilesRes, likesRes, followsRes, academiesRes, promotionsRes] = await Promise.all([
       supabase.from('posts').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*'),
       supabase.from('post_likes').select('*'),
       supabase.from('follows').select('*'),
+      supabase.from('academies').select('*'),
+      supabase.from('belt_promotions').select('*').order('requested_at', { ascending: false }),
     ]);
 
     const postRows = (postsRes.data ?? []) as PostRow[];
     const profileRows = (profilesRes.data ?? []) as ProfileRow[];
     const likeRows = (likesRes.data ?? []) as LikeRow[];
     const followRows = (followsRes.data ?? []) as FollowRow[];
+    const academyRows = (academiesRes.data ?? []) as AcademyRow[];
+    const promotionRows = (promotionsRes.data ?? []) as PromotionRow[];
 
     function toPost(row: PostRow): Post {
       return {
@@ -229,6 +275,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const remoteMapped = profileRows.map((row) => remoteProfileToLocal(row, followRows));
     const remoteIds = new Set(remoteMapped.map((p) => p.id));
     setProfiles((list) => [...remoteMapped, ...list.filter((p) => !remoteIds.has(p.id) && p.id !== 'u-me')]);
+
+    setAcademies(academyRows.map((row) => remoteAcademyToLocal(row, profileRows)));
+    setPromotions(promotionRows.map(remotePromotionToLocal));
   }, [meId]);
 
   useEffect(() => {
@@ -241,6 +290,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       replies,
       profiles,
       promotions,
+      academies,
       openMats,
       notebookEntries,
       notifications,
@@ -310,8 +360,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (found) return found;
         // Transient gap right after sign up/login: the real session is
         // known before it's finished syncing into local `profiles` state.
-        // Build "me" straight from the auth profile instead of crashing.
-        if (remoteProfile && id === remoteProfile.id) {
+        // `id` can either already be the real uuid, or still be the
+        // 'u-me' sentinel default if `setCurrentUserId` hasn't run yet
+        // (mutable module binding, not React state — screens can render
+        // with the stale value before that effect flushes). Either way,
+        // build "me" straight from the auth profile instead of crashing.
+        if (remoteProfile && (id === remoteProfile.id || id === 'u-me')) {
           return {
             id: remoteProfile.id,
             handle: remoteProfile.handle,
@@ -320,7 +374,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             belt: remoteProfile.belt,
             stripes: remoteProfile.stripes,
             beltVerified: remoteProfile.belt_verified,
-            academyId: 'a-gb-lyon',
+            academyId: remoteProfile.academy_id,
             academyRole: remoteProfile.is_coach ? 'assistant' : 'student',
             isCoach: remoteProfile.is_coach,
             followerCount: 0,
@@ -333,49 +387,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         throw new Error(`Unknown profile ${id}`);
       },
+      getAcademy: (id: string | null) => academies.find((a) => a.id === id),
       academyMembers: (academyId: string) => profiles.filter((p) => p.academyId === academyId),
       requestVerification: (profileId: string) => {
-        setPromotions((list) => {
-          if (list.some((p) => p.profileId === profileId && p.status === 'pending')) return list;
-          const profile = profiles.find((p) => p.id === profileId);
-          if (!profile) return list;
-          return [
-            ...list,
-            {
-              id: `bp-${Date.now()}`,
-              profileId,
-              belt: profile.belt,
-              stripes: profile.stripes,
-              status: 'pending',
-              requestedAtLabel: 'à l’instant',
-              reviewedBy: null,
-              reviewedAtLabel: null,
-            },
-          ];
-        });
+        if (!meId || profileId !== meId) return;
+        const me = profiles.find((p) => p.id === meId);
+        if (!me || !me.academyId) return;
+        supabase
+          .from('belt_promotions')
+          .insert({ profile_id: meId, academy_id: me.academyId, belt: me.belt, stripes: me.stripes })
+          .then(() => fetchFeed());
       },
       approvePromotion: (promotionId: string) => {
-        setPromotions((list) =>
-          list.map((p) =>
-            p.id === promotionId
-              ? { ...p, status: 'approved', reviewedBy: 'u-marcio', reviewedAtLabel: 'à l’instant' }
-              : p
-          )
-        );
-        setProfiles((list) => {
-          const promotion = promotions.find((p) => p.id === promotionId);
-          if (!promotion) return list;
-          return list.map((profile) =>
-            profile.id === promotion.profileId
-              ? { ...profile, belt: promotion.belt, stripes: promotion.stripes, beltVerified: true }
-              : profile
-          );
-        });
+        supabase.rpc('approve_belt_promotion', { promotion_id: promotionId, decision: 'approved' }).then(() => fetchFeed());
       },
       declinePromotion: (promotionId: string) => {
-        setPromotions((list) =>
-          list.map((p) => (p.id === promotionId ? { ...p, status: 'declined' } : p))
-        );
+        supabase.rpc('approve_belt_promotion', { promotion_id: promotionId, decision: 'declined' }).then(() => fetchFeed());
       },
       setViewMode,
       toggleAttendance: (openMatId: string) => {
@@ -486,6 +513,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       replies,
       profiles,
       promotions,
+      academies,
       openMats,
       notebookEntries,
       notifications,

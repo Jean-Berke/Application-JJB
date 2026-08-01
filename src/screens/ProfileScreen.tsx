@@ -13,7 +13,7 @@ import { VerifiedBadge } from '../components/ui/VerifiedBadge';
 import { Button } from '../components/ui/Button';
 import { PostCard } from '../components/PostCard';
 import { useApp } from '../data/store';
-import { currentUserId, getAcademy } from '../data/mock';
+import { currentUserId } from '../data/mock';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Profil'>,
@@ -21,7 +21,7 @@ type Props = CompositeScreenProps<
 >;
 
 export function ProfileScreen({ navigation }: Props) {
-  const { posts, getProfile, setViewMode } = useApp();
+  const { posts, getProfile, getAcademy, setViewMode } = useApp();
   const me = getProfile(currentUserId);
   const academy = getAcademy(me.academyId);
   const myPosts = posts.filter((p) => p.authorId === currentUserId);

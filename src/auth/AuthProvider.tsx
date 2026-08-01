@@ -13,6 +13,7 @@ export type RemoteProfile = {
   belt_verified: boolean;
   is_coach: boolean;
   onboarding_completed: boolean;
+  academy_id: string | null;
 };
 
 type AuthState = {
@@ -23,7 +24,8 @@ type AuthState = {
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  updateProfile: (updates: Partial<Pick<RemoteProfile, 'belt' | 'stripes' | 'onboarding_completed'>>) => Promise<void>;
+  updateProfile: (updates: Partial<Pick<RemoteProfile, 'belt' | 'stripes' | 'onboarding_completed' | 'academy_id'>>) => Promise<void>;
+  claimCoach: (academyId: string, code: string) => Promise<{ error: string | null }>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -80,6 +82,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!session) return;
       await supabase.from('profiles').update(updates).eq('id', session.user.id);
       await fetchProfile(session.user.id);
+    },
+    claimCoach: async (academyId, code) => {
+      if (!session) return { error: 'Not signed in' };
+      const { error } = await supabase.rpc('claim_coach', { academy_id: academyId, code });
+      if (!error) await fetchProfile(session.user.id);
+      return { error: error?.message ?? null };
     },
   };
 

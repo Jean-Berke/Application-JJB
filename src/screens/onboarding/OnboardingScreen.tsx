@@ -11,7 +11,7 @@ import { Switch } from '../../components/ui/Switch';
 import { Tag } from '../../components/ui/Tag';
 import { BeltBadge } from '../../components/ui/BeltBadge';
 import { H4, Body, Meta } from '../../components/ui/Typography';
-import { academies } from '../../data/mock';
+import { useApp } from '../../data/store';
 import { useAuth } from '../../auth/AuthProvider';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Onboarding'>;
@@ -20,7 +20,8 @@ const BELTS: BeltLevel[] = ['white', 'blue', 'purple', 'brown', 'black'];
 const INTERESTS = ['Gardes', 'Passages', 'Soumissions', 'Amenées au sol', 'Sorties', 'No-Gi', 'Compétition', 'Défense'];
 
 export function OnboardingScreen(_props: Props) {
-  const { session, signUp, updateProfile } = useAuth();
+  const { session, signUp, updateProfile, claimCoach } = useAuth();
+  const { academies } = useApp();
   const hasAccountAlready = !!session;
   const [step, setStep] = useState(hasAccountAlready ? 1 : 0);
   const visibleSteps = hasAccountAlready ? [1, 2, 3] : [0, 1, 2, 3];
@@ -37,6 +38,7 @@ export function OnboardingScreen(_props: Props) {
   const [stripes, setStripes] = useState(0);
   const [academySearch, setAcademySearch] = useState('');
   const [academyId, setAcademyId] = useState<string | null>(null);
+  const [coachCode, setCoachCode] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
   const [remindersOn, setRemindersOn] = useState(true);
 
@@ -79,9 +81,15 @@ export function OnboardingScreen(_props: Props) {
     }
 
     setSubmitting(true);
-    await updateProfile({ belt, stripes, onboarding_completed: true });
+    // Tenter le code coach avant de finaliser l'onboarding : une fois
+    // onboarding_completed à true, ce composant est démonté (RootNavigator
+    // bascule vers l'app), donc c'est le seul moment où on peut agir dessus.
+    // Un code invalide n'empêche pas de continuer, l'utilisateur reste élève.
+    if (academyId && coachCode.trim().length > 0) {
+      await claimCoach(academyId, coachCode.trim());
+    }
+    await updateProfile({ belt, stripes, academy_id: academyId, onboarding_completed: true });
     setSubmitting(false);
-    // La navigation bascule automatiquement vers l'app une fois onboarding_completed à true.
   }
 
   if (needsEmailConfirmation) {
@@ -199,6 +207,15 @@ export function OnboardingScreen(_props: Props) {
             <Pressable style={styles.notListed}>
               <Text style={styles.notListedText}>Mon académie n'est pas dans la liste</Text>
             </Pressable>
+            {academyId && (
+              <Input
+                label="Code coach (optionnel)"
+                value={coachCode}
+                onChangeText={setCoachCode}
+                placeholder="Donné par ton académie si tu es coach"
+                autoCapitalize="characters"
+              />
+            )}
           </>
         )}
 

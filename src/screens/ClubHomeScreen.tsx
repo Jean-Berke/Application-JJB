@@ -6,10 +6,10 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Meta } from '../components/ui/Typography';
 import { useApp } from '../data/store';
-import { currentUserId, getAcademy } from '../data/mock';
+import { currentUserId } from '../data/mock';
 
 export function ClubHomeScreen() {
-  const { getProfile, setViewMode } = useApp();
+  const { getProfile, getAcademy, setViewMode } = useApp();
   const me = getProfile(currentUserId);
   const academy = getAcademy(me.academyId);
 

@@ -18,14 +18,13 @@ type Props = NativeStackScreenProps<RootStackParamList>;
 export function StudentsScreen({ navigation }: Props) {
   const { getProfile, academyMembers, promotions, approvePromotion, declinePromotion } = useApp();
   const [search, setSearch] = useState('');
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
 
   const me = getProfile(currentUserId);
   const members = me.academyId ? academyMembers(me.academyId) : [];
   const students = members.filter((m) => m.id !== currentUserId);
 
   const pendingRequests = promotions.filter(
-    (p) => p.status === 'pending' && students.some((s) => s.id === p.profileId) && !dismissed.has(p.id)
+    (p) => p.status === 'pending' && students.some((s) => s.id === p.profileId)
   );
 
   const filteredStudents = students.filter((s) =>
@@ -90,10 +89,8 @@ export function StudentsScreen({ navigation }: Props) {
                       style={styles.validateButton}
                       onPress={() => approvePromotion(request.id)}
                     />
-                    <Pressable
-                      onPress={() => setDismissed((prev) => new Set(prev).add(request.id))}
-                    >
-                      <Text style={styles.laterLabel}>Plus tard</Text>
+                    <Pressable onPress={() => declinePromotion(request.id)}>
+                      <Text style={styles.laterLabel}>Refuser</Text>
                     </Pressable>
                   </View>
                 </Card>
